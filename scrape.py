@@ -4,7 +4,7 @@ from BeautifulSoup import BeautifulSoup
 import re
 
 def extract_inner_tags(tag):
-    html = ''.join([unicode(text) for text in tag.contents])
+    html = u''.join([unicode(text) for text in tag.contents])
     return BeautifulSoup(html)
 
 def process_td(soup_td):
@@ -13,6 +13,7 @@ def process_td(soup_td):
     if rosedesvents is not None: rosedesvents.extract()
     td = re.split('<br\s*/?>', unicode(soup_td))[0]
     td = td.strip()
+    td = u' '.join(BeautifulSoup(td).findAll(text=True))
     return td
     
 def unmess_html_plz(html):
