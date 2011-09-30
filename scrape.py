@@ -13,7 +13,7 @@ def process_td(soup_td):
     if rosedesvents is not None: rosedesvents.extract()
     td = re.split('<br\s*/?>', unicode(soup_td))[0]
     td = td.strip()
-    td = u' '.join(BeautifulSoup(td).findAll(text=True))
+    td = u''.join(BeautifulSoup(td).findAll(text=True))
     return td
     
 def unmess_html_plz(html):
