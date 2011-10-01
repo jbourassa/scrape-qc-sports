@@ -19,14 +19,20 @@ def process_td(soup_td):
 def unmess_html_plz(html):
     return html.replace('‑','-')
 
-conn = httplib.HTTPConnection('www.ville.quebec.qc.ca', 80)
-conn.request("GET", "/citoyens/loisirs_sports/tennis.aspx")
-response = conn.getresponse()
-html = response.read()
+def fetch():
+    conn = httplib.HTTPConnection('www.ville.quebec.qc.ca', 80)
+    conn.request("GET", "/citoyens/loisirs_sports/tennis.aspx")
+    response = conn.getresponse()
+    html = response.read()
 
-soup = BeautifulSoup(unmess_html_plz(html))
-address_tds = soup.findAll("td", attrs={'headers': re.compile('adresse')})
+    soup = BeautifulSoup(unmess_html_plz(html))
+    address_tds = soup.findAll("td", attrs={'headers': re.compile('adresse')})
 
-addresses = [process_td(address) for address in address_tds]
+    addresses = [process_td(address) for address in address_tds]
+    return addresses
 
-for address in  addresses: print address
+if __name__ == '__main__':
+    addresses = fetch()
+    with open('tennis.txt', 'w') as f:
+        for address in addresses:
+            f.write(address.encode('utf-8') + '\n')
