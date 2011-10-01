@@ -16,16 +16,13 @@ def process_td(soup_td):
     td = u''.join(BeautifulSoup(td).findAll(text=True))
     return td
     
-def unmess_html_plz(html):
-    return html.replace('‑','-')
-
 def fetch():
     conn = httplib.HTTPConnection('www.ville.quebec.qc.ca', 80)
     conn.request("GET", "/citoyens/loisirs_sports/tennis.aspx")
     response = conn.getresponse()
     html = response.read()
 
-    soup = BeautifulSoup(unmess_html_plz(html))
+    soup = BeautifulSoup(html, convertEntities=BeautifulSoup.HTML_ENTITIES)
     address_tds = soup.findAll("td", attrs={'headers': re.compile('adresse')})
 
     addresses = [process_td(address) for address in address_tds]
