@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import httplib
+import urllib
+import codecs
+import json
 from BeautifulSoup import BeautifulSoup
 import re
 
@@ -9,13 +12,9 @@ class Scraper:
         self._url = url
 
     def scrape(self):
-        print '1'
         html = self._fetch()
-        print '2'
         soup = self._soup(html)
-        print '3'
         address_tds = soup.findAll("td", attrs={'headers': re.compile('adresse')})
-        print '4'
         addresses = [self._process_td(address) for address in address_tds]
         return addresses
 
@@ -42,6 +41,21 @@ class Scraper:
         address = u''.join(BeautifulSoup(td).findAll(text=True))
         return address
 
+class GeocodingFailureException(Exception): pass
+def geocode_address(address):
+    address = (u'%s, Québec, Qc, Canada' % address).encode('utf-8')
+    conn = httplib.HTTPConnection('maps.googleapis.com', 80)
+    conn.request('GET', '/maps/api/geocode/json?%s' % urllib.urlencode({
+        'address': address, 'sensor': 'false' }))
+    response = conn.getresponse()
+    data = json.loads(response.read())
+    if data['status'] != 'OK':
+        raise GeocodingFailureException('Address not found: %s' % address)
+    geometry = data['results'][0]['geometry']
+    return geometry['location']['lat'], geometry['location']['lng']
+
+
+    
 if __name__ == '__main__':
     scraper = Scraper('www.ville.quebec.qc.ca', '/citoyens/loisirs_sports/tennis.aspx')
     addresses = scraper.scrape()
@@ -49,3 +63,5 @@ if __name__ == '__main__':
     with open('tennis.txt', 'w') as f:
         for address in addresses:
             f.write(address.encode('utf-8') + '\n')
+    
+    #print geocode_address(line)
