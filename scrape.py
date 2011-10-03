@@ -5,6 +5,9 @@ import codecs
 import json
 from BeautifulSoup import BeautifulSoup
 import re
+import logging
+
+logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
 
 class Scraper:
     def __init__(self, domain, url):
@@ -57,11 +60,21 @@ def geocode_address(address):
 
     
 if __name__ == '__main__':
-    scraper = Scraper('www.ville.quebec.qc.ca', '/citoyens/loisirs_sports/tennis.aspx')
+    logging.debug('Creating scraper.')
+    scraper = Scraper('www.ville.quebec.qc.ca',
+                      '/citoyens/loisirs_sports/tennis.aspx')
     addresses = scraper.scrape()
-
-    with open('tennis.txt', 'w') as f:
-        for address in addresses:
-            f.write(address.encode('utf-8') + '\n')
+    logging.debug('Got %d addresses.' % len(addresses))
+    json_addresses = []
+    for address in addresses:
+        new_address = {'address': address}
+        try:
+            logging.debug('Geocoding %s' % address)
+            new_address['lat'], new_address['lng'] = geocode_address(address)
+        except GeocodingFailureException:
+            logging.info('Failed to geocode %s' % address)
+        json_addresses.append(new_address)
+    with open('tennis.json', 'w') as f:
+        f.write(json.dumps(json_addresses).encode('utf-8'))
     
     #print geocode_address(line)
