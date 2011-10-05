@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<style type="text/css">
+  html { height: 100% }
+  body { height: 100%; margin: 0; padding: 0 }
+  #map_canvas { height: 100% }
+</style>
+<script type="text/javascript"
+    src="http://maps.googleapis.com/maps/api/js?sensor=false">
+</script>
+<script type="text/javascript">
+  function initialize() {
+    var latlng = new google.maps.LatLng(46.86,-71.25);
+    var myOptions = {
+      zoom: 11,
+      center: latlng,
+      mapTypeId: google.maps.MapTypeId.SATELLITE
+    };
+
+    var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+
+    var points = [{"lat": 46.864372, "lng": -71.257721, "address": "570, 79e Rue Est"}, {"lat": 46.790629, "lng": -71.2744968, "address": "2150, avenue Chapdelaine"}, {"lat": 46.8904821, "lng": -71.1993796, "address": "333, rue Perroteau"}, {"lat": 46.8895428, "lng": -71.1632652, "address": "2271, avenue Larue"}, {"lat": 46.8587871, "lng": -71.4191993, "address": "1525, rue de l'Innovation"}, {"lat": 46.8520973, "lng": -71.2084593, "address": "3300, chemin Royal"}, {"lat": 46.8540578, "lng": -71.36386949999999, "address": "150, boulevard des \u00c9tudiants"}, {"lat": 46.857785, "lng": -71.188896, "address": "655, boulevard des Chutes"}, {"lat": 46.7666609, "lng": -71.29880849999999, "address": "1095, avenue De Rochebelle"}, {"lat": 46.842366, "lng": -71.2244434, "address": "2025, rue Adjutor\u2011Rivard"}, {"lat": 46.7666735, "lng": -71.26686889999999, "address": "1615, c\u00f4te \u00e0 Gignac"}, {"lat": 46.7985712, "lng": -71.2398355, "address": "860, rue P\u00e8re\u2011Marquette"}, {"lat": 46.7475009, "lng": -71.36696789999999, "address": "4575, rue de la Promenade\u2011des\u2011Soeurs"}, {"lat": 46.9075823, "lng": -71.3773002, "address": "540, rue Delage"}, {"lat": 46.77279679999999, "lng": -71.3683343, "address": "1465, rue F\u00e9lix\u2011Antoine\u2011Savard"}, {"lat": 46.7795233, "lng": -71.3060373, "address": "771, rue Jacques\u2011Berthiaume"}, {"lat": 46.8478748, "lng": -71.3071532, "address": "1476, rue Virginia\u2011Woolf"}, {"lat": 46.750859, "lng": -71.342103, "address": "4170, rue Michel\u2011Herv\u00e9"}, {"lat": 46.7554314, "lng": -71.3098069, "address": "3224, rue Armand-Hamelin"}, {"lat": 46.87067039999999, "lng": -71.33429389999999, "address": "6106, rue de l'Accueil"}, {"lat": 46.77407669999999, "lng": -71.26687439999999, "address": "1290, avenue Ernest\u2011Lavigne"}, {"lat": 46.85832420000001, "lng": -71.33526499999999, "address": "2125, boulevard Bastien"}, {"lat": 46.7661028, "lng": -71.32421939999999, "address": "3460, rue Rochambeau"}, {"lat": 46.774167, "lng": -71.28780499999999, "address": "2770, rue de la Picardie"}, {"lat": 46.7840849, "lng": -71.2958359, "address": "2608, rue Biencourt"}, {"lat": 46.8032826, "lng": -71.242796, "address": "1591, rue du Sieur-d'Argenteuil"}, {"lat": 46.7663781, "lng": -71.3061488, "address": "1000, rue de Bar\u2011le\u2011Duc"}, {"lat": 46.8662946, "lng": -71.38723089999999, "address": "3535, rue de la Rivi\u00e8re\u2011Nelson"}, {"lat": 46.7711006, "lng": -71.2719613, "address": "2530, rue Anthony\u2011Law"}, {"lat": 46.77492609999999, "lng": -71.31885009999999, "address": "3200, avenue D'Amours"}, {"lat": 46.813821, "lng": -71.3806575, "address": "1469, rue Buffon"}, {"lat": 46.8180038, "lng": -71.2307068, "address": "160, rue du Cardinal\u2011Maurice\u2011Roy"}, {"lat": 46.88386389999999, "lng": -71.28251, "address": "5295, rue des Violettes"}, {"lat": 46.8632609, "lng": -71.2805513, "address": "8815, avenue Jean\u2011Paquin"}, {"lat": 46.8550669, "lng": -71.27194829999999, "address": "7475, avenue Paul\u2011Comtois"}, {"lat": 46.7864925, "lng": -71.2505158, "address": "1221, avenue du Chanoine\u2011Morel"}, {"lat": 46.7750568, "lng": -71.2456385, "address": "2030, rue Narcisse\u2011Roy"}, {"lat": 46.8472692, "lng": -71.2519296, "address": "4840, avenue des Loisirs"}, {"lat": 46.8146168, "lng": -71.26399409999999, "address": "380, rue Beaucage"}]
+      
+    for(var i=0; i < points.length; i++){
+      var point = points[i];
+
+      new google.maps.Marker({
+          position: new google.maps.LatLng(point.lat, point.lng), 
+          map: map, 
+          title:"Hello World!"
+      });
+    }
+  }
+
+</script>
+</head>
+<body onload="initialize()">
+  <div id="map_canvas" style="width:100%; height:100%"></div>
+</body>
+</html>
