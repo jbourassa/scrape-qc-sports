@@ -18,9 +18,9 @@ class Scraper:
         """Scrapes an url and returns all locations in that html page."""
         html = self._fetch()
         soup = self._soup(html)
-        address_tds = soup.findAll("td", attrs={'headers': re.compile('adresse')})
-        addresses = [self._process_address_td(address) for address in address_tds]
-        return addresses
+        rows = soup.find('table', 'sports').tbody.findAll('tr')
+        data = [self._process_tr(row) for row in rows]
+        return data
 
     def _fetch(self):
         """Makes the HTTP request and returns the response."""
@@ -39,10 +39,14 @@ class Scraper:
         html = u''.join([unicode(text) for text in tag.contents])
         return BeautifulSoup(html)
     
-    def _process_tr(self, soup_tr):
-        """Process a tr and returns a th for the name,
-        td for the address and td for the district."""
-        pass
+    def _process_tr(self, tr):
+        """Process a tr and extracts the name and address"""
+        address_td = tr.find("td", attrs={'headers': re.compile('adresse')})
+        name_th = tr.find("th", attrs={'headers': re.compile('endroit')})
+        return {
+            'name': re.sub('\s+', ' ', name_th.text),
+            'address': self._process_address_td(address_td)
+        }
         
     def _process_address_td(self, soup_td):
         """Processes the td containing the address
@@ -75,16 +79,14 @@ if __name__ == '__main__':
     logging.debug('Creating scraper.')
     scraper = Scraper('www.ville.quebec.qc.ca',
                       '/citoyens/loisirs_sports/tennis.aspx')
-    addresses = scraper.scrape()
-    logging.debug('Got %d addresses.' % len(addresses))
-    json_addresses = []
-    for address in addresses:
-        new_address = {'address': address}
+    locations = scraper.scrape()
+    logging.debug('Got %d locations.' % len(locations))
+    for location in locations:
+        address = location['address']
         try:
             logging.debug('Geocoding %s' % address)
-            new_address['lat'], new_address['lng'] = geocode_address(address)
+            location['lat'], location['lng'] = geocode_address(address)
         except GeocodingFailureException:
             logging.info('Failed to geocode %s' % address)
-        json_addresses.append(new_address)
     with open('tennis.json', 'w') as f:
-        f.write(json.dumps(json_addresses).encode('utf-8'))
+        f.write(json.dumps(locations).encode('utf-8'))
