@@ -85,6 +85,16 @@ def geocode_address(address):
     geometry = data['results'][0]['geometry']
     return geometry['location']['lat'], geometry['location']['lng']
 
+def group_activities(activities):
+    """Groups activities by location"""
+    locations = {} 
+    for activity in activities:
+        lat_lng = "%f %f" % (activity['lat'], activity['lng'])
+        if not lat_lng in locations: locations[lat_lng] = []
+        locations[lat_lng].append(activity)
+
+    return locations.values()
+
 if __name__ == '__main__':
     logging.debug('Creating scraper.')
     scraper = Scraper('www.ville.quebec.qc.ca')
@@ -96,8 +106,6 @@ if __name__ == '__main__':
     
     logging.debug('Got %d locations.' % len(locations))
     
-    points = {} # for debug
-    
     for location in locations:
         address = location['address']
         try:
@@ -105,5 +113,8 @@ if __name__ == '__main__':
             location['lat'], location['lng'] = geocode_address(address)
         except GeocodingFailureException:
             logging.info('Failed to geocode %s' % address)
+
+    activity_by_location = group_activities(locations)
+
     with open('locations.json', 'w') as f:
-        f.write(json.dumps(locations).encode('utf-8'))
+        f.write(json.dumps(activity_by_location).encode('utf-8'))
