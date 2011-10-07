@@ -9,24 +9,34 @@ import logging
 
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
 
-class Scraper:
-    def __init__(self, domain, url):
-        self._domain = domain
-        self._url = url
+PAGES = {
+    'skateboard': '/citoyens/loisirs_sports/planche.aspx',
+    'sliding': '/citoyens/loisirs_sports/glissoires.aspx',
+    'kid_parks': '/citoyens/loisirs_sports/parcs_intergenerationnels.aspx',
+    'indoor_skating': '/citoyens/loisirs_sports/patinoires_interieures.aspx',
+    'pools': '/citoyens/loisirs_sports/piscines_interieures.aspx',
+    'crosscountry_ski': '/citoyens/loisirs_sports/raquettes_ski.aspx',
+    'tennis': '/citoyens/loisirs_sports/tennis.aspx'
+}
 
-    def scrape(self):
+class Scraper:
+    def __init__(self, domain):
+        self._domain = domain
+        self._conn = httplib.HTTPConnection(self._domain, 80)
+
+    def scrape(self, url):
         """Scrapes an url and returns all locations in that html page."""
-        html = self._fetch()
+        logging.debug("Fetching " + url)
+        html = self._fetch(url)
         soup = self._soup(html)
         rows = soup.find('table', 'sports').tbody.findAll('tr')
         data = [self._process_tr(row) for row in rows]
         return data
 
-    def _fetch(self):
+    def _fetch(self, url):
         """Makes the HTTP request and returns the response."""
-        conn = httplib.HTTPConnection(self._domain, 80)
-        conn.request('GET', self._url)
-        response = conn.getresponse()
+        self._conn.request('GET', url)
+        response = self._conn.getresponse()
         html = response.read()
         return html
 
@@ -41,8 +51,8 @@ class Scraper:
     
     def _process_tr(self, tr):
         """Process a tr and extracts the name and address"""
-        address_td = tr.find("td", attrs={'headers': re.compile('adresse')})
-        name_th = tr.find("th", attrs={'headers': re.compile('endroit')})
+        address_td = tr.find("td")
+        name_th = tr.find("th")
         return {
             'name': re.sub('\s+', ' ', name_th.text),
             'address': self._process_address_td(address_td)
@@ -54,9 +64,11 @@ class Scraper:
         soup_td = self._extract_inner_tags(soup_td)
         rosedesvents = soup_td.find('div', attrs={'id': re.compile('rosedesvents')})
         if rosedesvents is not None: rosedesvents.extract()
-        td = re.split('<br\s*/?>', unicode(soup_td))[0]
+        td = soup_td.text
+        td = re.split(u't(é|e)l', unicode(soup_td), flags=re.I)[0]
         td = td.strip()
         address = u''.join(BeautifulSoup(td).findAll(text=True))
+        address = re.sub('\s+', ' ', address)
         return address
 
 class GeocodingFailureException(Exception): pass
@@ -73,14 +85,19 @@ def geocode_address(address):
     geometry = data['results'][0]['geometry']
     return geometry['location']['lat'], geometry['location']['lng']
 
-
-    
 if __name__ == '__main__':
     logging.debug('Creating scraper.')
-    scraper = Scraper('www.ville.quebec.qc.ca',
-                      '/citoyens/loisirs_sports/tennis.aspx')
-    locations = scraper.scrape()
+    scraper = Scraper('www.ville.quebec.qc.ca')
+    locations = []
+    for key, url in PAGES.iteritems():
+        page_locations = scraper.scrape(url)
+        for location in page_locations:
+            locations.append(dict(location, **dict(type=key)))
+    
     logging.debug('Got %d locations.' % len(locations))
+    
+    points = {} # for debug
+    
     for location in locations:
         address = location['address']
         try:
@@ -88,5 +105,5 @@ if __name__ == '__main__':
             location['lat'], location['lng'] = geocode_address(address)
         except GeocodingFailureException:
             logging.info('Failed to geocode %s' % address)
-    with open('tennis.json', 'w') as f:
+    with open('locations.json', 'w') as f:
         f.write(json.dumps(locations).encode('utf-8'))
