@@ -65,10 +65,10 @@ class Scraper:
         rosedesvents = soup_td.find('div', attrs={'id': re.compile('rosedesvents')})
         if rosedesvents is not None: rosedesvents.extract()
         td = soup_td.text
-        td = re.split(u't(é|e)l', unicode(soup_td), flags=re.I)[0]
+        td = re.split(u'(?i)t(é|e)l', unicode(soup_td))[0]
         td = td.strip()
         address = u''.join(BeautifulSoup(td).findAll(text=True))
-        address = re.sub('\s+', ' ', address)
+        address = re.sub('\s+', ' ', address).strip()
         return address
 
 class GeocodingFailureException(Exception): pass
